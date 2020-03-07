@@ -62,17 +62,16 @@ void GraphicsSystem::update(float dt) {
 
 	//1st pass -render to frame buffer
 	frame_.bindAndClear();
-
 	resetShaderAndMaterial_();
-
     for (auto &mesh : ECS.getAllComponents<Mesh>()) {
-        renderMeshComponent_(mesh);
+		if (mesh.shader_flag == true) {
+			renderMeshComponent_(mesh);
+		}
     }
-    
-    renderEnvironment_();
+    //renderEnvironment_();
+
 	//2nd  pass, render to screen
 	bindAndClearScreen_();
-
 	resetShaderAndMaterial_();
 	for (auto &mesh : ECS.getAllComponents<Mesh>()) {
 		renderMeshComponent_(mesh);
@@ -96,8 +95,8 @@ void GraphicsSystem::update(float dt) {
 	glViewport(
 				0,
 				0,
-				(GLsizei)viewport_width_ /4,
-				(GLsizei)viewport_height_/4 
+				(GLsizei)viewport_width_ /2,
+				(GLsizei)viewport_height_/2 
 	);
 
 

@@ -55,6 +55,7 @@ void Game::init(int w, int h) {
 	Mesh& floor_mesh = ECS.createComponentForEntity<Mesh>(floor_entity);
 	floor_mesh.geometry = graphics_system_.createGeometryFromFile("data/assets/floor_40x40.obj");
 	floor_mesh.material = graphics_system_.createMaterial();
+	floor_mesh.shader_flag = false;
 	Material& floor_mat = graphics_system_.getMaterial(floor_mesh.material);
 	floor_mat.shader_id = phong_shader->program;
 	floor_mat.diffuse_map = Parsers::parseTexture("data/assets/block_blue.tga");
@@ -68,6 +69,7 @@ void Game::init(int w, int h) {
 	Mesh& sphere_mesh = ECS.createComponentForEntity<Mesh>(sphere_entity);
 	int sphere_geom = graphics_system_.createGeometryFromFile("data/assets/sphere.obj");
 	sphere_mesh.geometry = sphere_geom;
+	sphere_mesh.shader_flag = true;
 	sphere_mesh.material = graphics_system_.createMaterial();
 	Material& sphere_mat = graphics_system_.getMaterial(sphere_mesh.material);
 	sphere_mat.shader_id = phong_shader->program;
@@ -84,6 +86,7 @@ void Game::init(int w, int h) {
 	Mesh& ref_mesh = ECS.createComponentForEntity<Mesh>(ref_entity);
 	ref_mesh.geometry = sphere_geom;
 	ref_mesh.material = graphics_system_.createMaterial();
+	ref_mesh.shader_flag = true;
 	Material& ref_mat = graphics_system_.getMaterial(ref_mesh.material);
 	ref_mat.shader_id = reflection_shader->program;
 	ref_mat.cube_map = cubemap_texture;

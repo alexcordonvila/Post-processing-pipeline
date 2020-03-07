@@ -47,6 +47,7 @@ struct Transform : public Component, public lm::mat4 {
 struct Mesh : public Component {
     int geometry;
     int material;
+	bool shader_flag;
 };
 
 
