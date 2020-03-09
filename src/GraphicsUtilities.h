@@ -56,5 +56,6 @@ struct Framebuffer {
 	GLuint color_textures[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	void bindAndClear();
 	void initColor(GLsizei width, GLsizei height);
+	void initGbuffer(GLsizei width, GLsizei height);
 };
 

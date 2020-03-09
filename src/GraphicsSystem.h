@@ -50,6 +50,13 @@ private:
     
 	//shader stuff
 	Shader* shader_ = nullptr; //current shader
+	Shader* bloom_shader_ = nullptr;
+	Shader* wave_shader_ = nullptr;
+	Shader* tint_shader_ = nullptr;
+	lm::vec3 color_ = lm::vec3(0,0,0);
+	lm::vec3 color_var;
+	float color_value[3] = { 0, 0, 0 };
+	int shader_selector;
 	void useShader(Shader* s);
 	void useShader(GLuint p);
 

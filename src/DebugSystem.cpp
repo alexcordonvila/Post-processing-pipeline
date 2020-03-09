@@ -222,7 +222,7 @@ void DebugSystem::update(float dt) {
 	glBindVertexArray(0);
 
 	//imGUI
-	updateimGUI_(dt);
+	//updateimGUI_(dt);
 }
 
 // recursive function to render a transform node in imGUI
@@ -246,7 +246,7 @@ void imGuiRenderTransformNode(TransformNode& trans) {
 //called at the end of DebugSystem::update()
 void DebugSystem::updateimGUI_(float dt) {
 
-    //show_imGUI_ is a bool toggled directly from Game, using Alt-0
+	//show_imGUI_ is a bool toggled directly from Game, using Alt-0
 	if (show_imGUI_)
 	{
 		// Start the Dear ImGui frame
@@ -261,8 +261,8 @@ void DebugSystem::updateimGUI_(float dt) {
 		ImGuiIO &io = ImGui::GetIO();
 
 		//if imGUI wants the mouse, don't fire picking ray
-        //this disables firing picking ray when pointer is
-        //over imGUI window
+		//this disables firing picking ray when pointer is
+		//over imGUI window
 		if (io.WantCaptureMouse)
 			can_fire_picking_ray_ = false;
 		else
@@ -296,9 +296,9 @@ void DebugSystem::updateimGUI_(float dt) {
 		}
 
 		//create a tree of TransformNodes objects (defined in DebugSystem.h)
-        //which represents the current scene graph
-        
-        // 1) create a temporary array with ALL transforms
+		//which represents the current scene graph
+
+		// 1) create a temporary array with ALL transforms
 		std::vector<TransformNode> transform_nodes;
 		auto& all_transforms = ECS.getAllComponents<Transform>();
 		for (size_t i = 0; i < all_transforms.size(); i++) {
@@ -310,7 +310,7 @@ void DebugSystem::updateimGUI_(float dt) {
 				tn.isTop = true;
 			transform_nodes.push_back(tn);
 		}
-        
+
 		// 2) traverse array to assign children to their parents
 		for (size_t i = 0; i < transform_nodes.size(); i++) {
 			int parent = all_transforms[i].parent;
@@ -318,7 +318,7 @@ void DebugSystem::updateimGUI_(float dt) {
 				transform_nodes[parent].children.push_back(transform_nodes[i]);
 			}
 		}
-        
+
 		// 3) create a new array with only top level nodes of transform tree
 		std::vector<TransformNode> transform_topnodes;
 		for (size_t i = 0; i < transform_nodes.size(); i++) {
@@ -326,30 +326,30 @@ void DebugSystem::updateimGUI_(float dt) {
 				transform_topnodes.push_back(transform_nodes[i]);
 		}
 
-        //create 2 imGUI columns, first contains transform tree
-        //second contains selected item from picking
+		//create 2 imGUI columns, first contains transform tree
+		//second contains selected item from picking
 		ImGui::Columns(2, "columns");
 
 		//draw all the nodes
 		for (auto& trans : transform_topnodes) {
-            //this is a recursive function (defined above)
-            //which draws a transform node (and its children)
-            //using imGUI
+			//this is a recursive function (defined above)
+			//which draws a transform node (and its children)
+			//using imGUI
 			imGuiRenderTransformNode(trans);
 		}
 
-        //*** PICKING*** //
-        //general approach: Debug System has a member variable which is an entity
-        //with Ray Collider (ent_picking_ray_). When user clicks on the screen, this
-        //ray is fired into the scene.
-        //if it collides with a box collider, we read that collision here and render
-        //imGUI with the details of the collider
-        
-        //look at DebugSystem::setPickingRay_() to see how picking ray is constructed
-        
-        //next column for picking
+		//*** PICKING*** //
+		//general approach: Debug System has a member variable which is an entity
+		//with Ray Collider (ent_picking_ray_). When user clicks on the screen, this
+		//ray is fired into the scene.
+		//if it collides with a box collider, we read that collision here and render
+		//imGUI with the details of the collider
+
+		//look at DebugSystem::setPickingRay_() to see how picking ray is constructed
+
+		//next column for picking
 		ImGui::NextColumn();
-    
+
 		//get the pick ray first
 		Collider& pick_ray_collider = ECS.getComponentFromEntity<Collider>(ent_picking_ray_);
 

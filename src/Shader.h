@@ -45,6 +45,7 @@ const std::unordered_map<std::string, UniformID> uniform_string2id_ = {
 	{ "u_use_reflection_map", U_USE_REFLECTION_MAP },
 	{ "u_num_lights", U_NUM_LIGHTS },
 	{ "u_screen_texture", U_SCREEN_TEXTURE }
+
 };
 
 

@@ -117,48 +117,6 @@ void Framebuffer::bindAndClear() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-//void Framebuffer::initColor(GLsizei w, GLsizei h) {
-//
-//	width = w; height = h;
-//
-//	glGenFramebuffers(1, &(framebuffer));
-//	glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
-//
-//	glGenTextures(1, &(color_textures[0]));
-//	glBindTexture(GL_TEXTURE_2D,color_textures[0]);
-//
-//	glTexImage2D(GL_TEXTURE_2D,
-//				0, 
-//				GL_RGB, 
-//				width, 
-//				height, 
-//				0, 
-//				GL_RGB,
-//				GL_UNSIGNED_BYTE,
-//				NULL);
-//	//if you don't set these,opengl will refuse to draw your texture cos it sucks
-//	glTextureParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	//attaches the empty textures into slot 0 of the framebuffer
-//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_textures[0], 0);
-//
-//	unsigned int rbo;
-//	glGenRenderbuffers(1, &rbo);
-//	glBindRenderbuffer(GL_RENDERBUFFER,rbo);
-//
-//	//define storage type
-//	glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,width,height);
-//	//unbind renderbuffer
-//	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-//
-//	glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,
-//							GL_RENDERBUFFER,rbo);
-//	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-//		std::cout << "ERROR: framebuffer not complete\n";
-//	}
-//	glBindFramebuffer(GL_FRAMEBUFFER,0);
-//	
-//}
 
 void Framebuffer::initColor(GLsizei w, GLsizei h) {
 
@@ -221,4 +179,54 @@ void Framebuffer::initColor(GLsizei w, GLsizei h) {
 	//unbind framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+}
+
+void Framebuffer::initGbuffer(GLsizei w, GLsizei h) {
+	width = w; height = h;
+	//create and bind
+	glGenFramebuffers(1, &(framebuffer));
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	//position
+	glGenTextures(1, &(color_textures[0]));
+	glBindTexture(GL_TEXTURE_2D, color_textures[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_textures[0], 0);
+
+	//normal
+	glGenTextures(1, &(color_textures[1]));
+	glBindTexture(GL_TEXTURE_2D, color_textures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, color_textures[1], 0);
+
+	//diffuse + specular (in A channel)
+	glGenTextures(1, &(color_textures[2]));
+	glBindTexture(GL_TEXTURE_2D, color_textures[2]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, color_textures[2], 0);
+
+
+	// - tell OpenGL which color attachments we'll use
+	// (of this framebuffer) for rendering
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0,
+		GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+		GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::Framebuffer is not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
