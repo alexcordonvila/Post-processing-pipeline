@@ -17,7 +17,6 @@ GraphicsSystem::~GraphicsSystem() {
 
 //set initial state of graphics system
 void GraphicsSystem::init(int window_width, int window_height, std::string assets_folder) {
-	shader_selector = 1;
 	screen_background_color = lm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     updateMainViewport(window_width, window_height);
     
@@ -40,6 +39,7 @@ void GraphicsSystem::init(int window_width, int window_height, std::string asset
 	bloom_shader_= new Shader("data/shaders/bloom.vert","data/shaders/bloom.frag");
 	wave_shader_ = new Shader("data/shaders/wave.vert", "data/shaders/wave.frag");
 	tint_shader_ = new Shader("data/shaders/tint.vert", "data/shaders/tint.frag");
+	dithering_shader_ = new Shader("data/shaders/dithering.vert", "data/shaders/dithering.frag");
 	frame_.initColor(window_width, window_height);
 	temp_texture_ = Parsers::parseTexture("data/assets/block_blue.tga");
 
@@ -114,6 +114,16 @@ void GraphicsSystem::update(float dt) {
 			glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
 			geometries_[screen_space_geom_].render();
 			break; //optional
+		case 4:
+			useShader(dithering_shader_);
+
+			color_ = color_var;
+			dithering_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+			dithering_shader_->setUniform(U_NUM_LIGHTS, color_);
+			//If we divide by 4 we set the image on top bottom left of the screen
+			glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
+			geometries_[screen_space_geom_].render();
+			break; //optional
 	}
 	
 	glEnable(GL_DEPTH_TEST);
@@ -137,7 +147,7 @@ void GraphicsSystem::update(float dt) {
 	ImGui::SetNextWindowBgAlpha(1.0);
 	ImGui::Begin("Post Processing");
 
-	const char* items[]{"Bloom","Screen Wave","Color tint" };
+	const char* items[]{"Bloom","Screen Wave","Color tint","Diethering" };
 	static int selectedItem = 0;
 	static bool selected[1];
 	static float r, g, b;
@@ -146,7 +156,7 @@ void GraphicsSystem::update(float dt) {
 		
 	}*/
 	ImGui::Text("Select effect:");
-	if (ImGui::Combo("Shader",&selectedItem,items,IM_ARRAYSIZE(items),3)){
+	if (ImGui::Combo("Shader",&selectedItem,items,IM_ARRAYSIZE(items),4)){
 			switch (selectedItem){
 				case 0: 
 					shader_selector = 1; 
@@ -161,6 +171,10 @@ void GraphicsSystem::update(float dt) {
 				case 2:
 					shader_selector = 3;
 					
+					break;
+				case 3:
+					shader_selector = 4;
+
 					break;
 			}
 
