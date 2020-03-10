@@ -89,59 +89,40 @@ void GraphicsSystem::update(float dt) {
 
 	switch (shader_selector) {
 		case 1 :
-			useShader(screen_space_shader_);
-			screen_space_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
-			//If we divide by 4 we set the image on top bottom left of the screen
-			glViewport(0, 0, (GLsizei)viewport_width_ , (GLsizei)viewport_height_);
-			geometries_[screen_space_geom_].render();
+			//useShader(screen_space_shader_);
+			//screen_space_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
 			break; 
 		case 2:
 			useShader(wave_shader_);
 			wave_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
 			//GLfloat move = dt;
-			wave_shader_->setUniform(U_NUM_LIGHTS,dt);
-			//If we divide by 4 we set the image on top bottom left of the screen
-			glViewport(0, 0, (GLsizei)viewport_width_ , (GLsizei)viewport_height_ );
-			geometries_[screen_space_geom_].render();
+			time = time + dt;
+			wave_shader_->setUniform(U_TIME,time);
+			wave_shader_->setUniform(U_FLAG, (float)wave_flag_);
+			wave_shader_->setUniform(U_SPEED, (float)wave_speed_);
 			break; 
 		case 3:
 			useShader(tint_shader_);
-			
-			color_ = color_var;
 			tint_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
-			tint_shader_->setUniform(U_NUM_LIGHTS, color_);
-			//If we divide by 4 we set the image on top bottom left of the screen
-			glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
-			geometries_[screen_space_geom_].render();
+			tint_shader_->setUniform(U_NUM_LIGHTS, color_var);
 			break; //optional
 		case 4:
 			useShader(dithering_shader_);
-
-			color_ = color_var;
 			dithering_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
-			dithering_shader_->setUniform(U_NUM_LIGHTS, color_);
-			//If we divide by 4 we set the image on top bottom left of the screen
-			glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
-			geometries_[screen_space_geom_].render();
+			dithering_shader_->setUniform(U_FLAG, (float)bw_flag_);
 			break; //optional
 	}
-	
+	glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
+	geometries_[screen_space_geom_].render();
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_DEPTH_TEST);
+
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	ImGuiIO &io = ImGui::GetIO();
-
-	//if imGUI wants the mouse, don't fire picking ray
-	//this disables firing picking ray when pointer is
-	//over imGUI window
-	/*if (io.WantCaptureMouse)
-		can_fire_picking_ray_ = false;
-	else
-		can_fire_picking_ray_ = true;*/
 
 	ImGui::SetNextWindowSize(ImVec2(200, 300));
 	ImGui::SetNextWindowBgAlpha(1.0);
@@ -152,62 +133,41 @@ void GraphicsSystem::update(float dt) {
 	static bool selected[1];
 	static float r, g, b;
 	static ImVec4 color = ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
-	/*if (ImGui::Button("Change Shader")) {
-		
-	}*/
+
 	ImGui::Text("Select effect:");
-	if (ImGui::Combo("Shader",&selectedItem,items,IM_ARRAYSIZE(items),4)){
+	if (ImGui::Combo("Shader", &selectedItem, items, IM_ARRAYSIZE(items), 4)) {}
 			switch (selectedItem){
 				case 0: 
 					shader_selector = 1; 
-					
-					
+					ImGui::Separator();
 					break;
 				case 1: 
-					shader_selector = 2; 
-					
-					
+					shader_selector = 2; 	
+					ImGui::Separator();
+					ImGui::Checkbox("Wave", &wave_flag_);
+					ImGui::SliderFloat("Speed",&wave_speed_,1,100);
 					break;
 				case 2:
 					shader_selector = 3;
+					ImGui::Separator();
+					ImGui::Text("Select Color:");
+					ImGui::ColorPicker3("Color", (float*)&color, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
+					color_var = lm::vec3(color.x, color.y, color.z);
 					
 					break;
 				case 3:
 					shader_selector = 4;
-
+					ImGui::Separator();
+					ImGui::Checkbox("Black And White",&bw_flag_);
 					break;
 			}
-
-	}
-	if (selectedItem == 2) {
 	
-		ImGui::Text("Select Color:");
-		// Edit a color (stored as ~4 floats)
-		ImGui::Separator();
-		ImGui::ColorPicker3("Color", (float*)&color, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
-		color_var = lm::vec3(color.x, color.y, color.z);
-		//ImGui::DragFloat3("Color", color_value);
-		//color_var = lm::vec3(color_value[1], color_value[2], color_value[3]);
-		ImGui::SameLine();
-		
-	}
 	ImGui::End();
 
 	// Rendering
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	glEnable(GL_DEPTH_TEST);
-	//3. final compositing
-
-	/*useShader(bloom_shader_);
-	bloom_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
-	bloom_shader_->setTexture(U_COLOR, frame_.color_textures[1], 0);*/
-	////If we divide by 4 we set the image on top bottom left of the screen
-	//glViewport(0, 0, (GLsizei)viewport_width_ / 2, (GLsizei)viewport_height_ / 2);
-
-	//geometries_[screen_space_geom_].render();
-
-	
+	glEnable(GL_DEPTH_TEST);	
 }
 
 //renders a given mesh component

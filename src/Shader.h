@@ -5,6 +5,7 @@
 #include <vector>
 
 //Uniform IDs are global so that we can access them in Graphics System
+//Uniforms_count has to be last enum in the list
 enum UniformID {
     U_VP,
 	U_MVP,
@@ -23,7 +24,11 @@ enum UniformID {
 	U_USE_REFLECTION_MAP,
 	U_NUM_LIGHTS,
 	U_SCREEN_TEXTURE,
+	U_FLAG,
+	U_TIME,
+	U_SPEED,
 	UNIFORMS_COUNT
+	
 };
 
 //this map allows us to map the uniform string name to our enum ID
@@ -44,7 +49,10 @@ const std::unordered_map<std::string, UniformID> uniform_string2id_ = {
 	{ "u_skybox", U_SKYBOX },
 	{ "u_use_reflection_map", U_USE_REFLECTION_MAP },
 	{ "u_num_lights", U_NUM_LIGHTS },
-	{ "u_screen_texture", U_SCREEN_TEXTURE }
+	{ "u_screen_texture", U_SCREEN_TEXTURE },
+	{ "u_float_flag", U_FLAG },
+	{ "u_time", U_TIME },
+	{ "u_speed", U_SPEED }
 
 };
 
