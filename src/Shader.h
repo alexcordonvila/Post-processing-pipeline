@@ -30,6 +30,9 @@ enum UniformID {
 	U_INTENSITY,
 	U_BLUR,
 	U_MAT_TYPE,
+	U_LIGHTS_UBO,
+	U_RADIUS,
+	U_OPACITY,
 	UNIFORMS_COUNT
 	
 };
@@ -58,6 +61,9 @@ const std::unordered_map<std::string, UniformID> uniform_string2id_ = {
 	{ "u_intensity", U_INTENSITY },
 	{ "u_flag_blur", U_BLUR },
 	{ "u_mat_type", U_MAT_TYPE },
+	{ "u_lights_ubo", U_LIGHTS_UBO },
+	{ "u_radius", U_RADIUS },
+	{ "u_opacity", U_OPACITY },
 	{ "u_speed", U_SPEED }
 
 };
@@ -91,6 +97,7 @@ public:
     bool setUniform(UniformID id, const float data);
     bool setUniform(UniformID id, const lm::vec3& data);
     bool setUniform(UniformID id, const lm::mat4& data);
+	bool setUniformBlock(UniformID id, const int binding_point);
     bool setTexture(UniformID id, GLuint tex_id, GLuint unit);
     bool setTextureCube(UniformID id, GLuint tex_id, GLuint unit);
     

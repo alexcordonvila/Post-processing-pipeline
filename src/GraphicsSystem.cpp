@@ -41,6 +41,9 @@ void GraphicsSystem::init(int window_width, int window_height, std::string asset
 	tint_shader_ = new Shader("data/shaders/tint.vert", "data/shaders/tint.frag");
 	dithering_shader_ = new Shader("data/shaders/dithering.vert", "data/shaders/dithering.frag");
 	invert_shader_ = new Shader("data/shaders/invert.vert", "data/shaders/invert.frag");
+	scan_shader_ = new Shader("data/shaders/scan.vert", "data/shaders/scan.frag");
+	vignette_shader_ = new Shader("data/shaders/vignette.vert", "data/shaders/vignette.frag");
+	chrom_aberration_shader_ = new Shader("data/shaders/chromatic_aberration.vert", "data/shaders/chromatic_aberration.frag");
 	frame_.initColor(window_width, window_height);
 	temp_texture_ = Parsers::parseTexture("data/assets/block_blue.tga");
 
@@ -119,6 +122,29 @@ void GraphicsSystem::update(float dt) {
 		case 5:
 			useShader(invert_shader_);
 			dithering_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+		break;
+		case 6:
+			useShader(scan_shader_);
+			time = time + dt;
+			scan_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+			scan_shader_->setUniform(U_INTENSITY, (float)scan_intensity_);
+			scan_shader_->setUniform(U_TIME, time);
+			scan_shader_->setUniform(U_SPEED, (int)scan_speed);
+		break;
+		case 7:
+			useShader(vignette_shader_);
+			vignette_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+			vignette_shader_->setUniform(U_RADIUS,radius_);
+			vignette_shader_->setUniform(U_INTENSITY, (float)softness_);
+			vignette_shader_->setUniform(U_OPACITY, (float)opacity_);
+
+			break;
+		case 8:
+			useShader(chrom_aberration_shader_);
+			chrom_aberration_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+			/*chrom_aberration_shader_->setUniform(U_RADIUS, radius_);
+			chrom_aberration_shader_->setUniform(U_INTENSITY, (float)softness_);
+			chrom_aberration_shader_->setUniform(U_OPACITY, (float)opacity_);*/
 			break;
 	}
 	glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
@@ -134,10 +160,10 @@ void GraphicsSystem::update(float dt) {
 	ImGuiIO &io = ImGui::GetIO();
 
 	ImGui::SetNextWindowSize(ImVec2(200, 300));
-	ImGui::SetNextWindowBgAlpha(1.0);
+	ImGui::SetNextWindowBgAlpha(0.8);
 	ImGui::Begin("Post Processing");
 
-	const char* items[]{"Normal","Screen Wave","Color tint","Diethering","Invert" };
+	const char* items[]{"Normal","Screen Wave","Color tint","Diethering","Invert","Scanline","Old Vignette", "Chromatic Aberration" };
 	static int selectedItem = 0;
 	static bool selected[1];
 	static float r, g, b;
@@ -146,39 +172,59 @@ void GraphicsSystem::update(float dt) {
 	ImGui::Text("Select effect:");
 	if (ImGui::Combo("Shader", &selectedItem, items, IM_ARRAYSIZE(items), 4)) {}
 			switch (selectedItem){
-				case 0: 
+				case 0: //Normal and Blur
 					shader_selector = 1; 
 					ImGui::Separator();
 					ImGui::Checkbox("Blur", &blur_flag_);
 					ImGui::SliderInt("Blur lvl", &intesity_, 2, 6);
 					
-					
 					break;
-				case 1: 
+				case 1: //Waving
 					shader_selector = 2; 	
 					ImGui::Separator();
 					ImGui::Checkbox("Wave", &wave_flag_);
 					ImGui::SliderFloat("Speed",&wave_speed_,1,100);
+					
 					break;
-				case 2:
+				case 2: //Tint
 					shader_selector = 3;
 					ImGui::Separator();
 					ImGui::Text("Select Color:");
 					ImGui::ColorPicker3("Color", (float*)&color, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
 					color_var = lm::vec3(color.x, color.y, color.z);
-					ImGui::Checkbox("Gray Scale", &bw_flag_);
 					
+					ImGui::Checkbox("Gray Scale", &bw_flag_);
 					break;
-				case 3:
+				case 3: //Diethering
 					shader_selector = 4;
 					ImGui::Separator();
 					if (ImGui::Button("MAT 4x4")) { mat_type_ = 0; }
 					if (ImGui::Button("MAT 8x8")) { mat_type_ = 1; }
 					ImGui::Checkbox("Black And White",&bw_flag_);
+					
 					break;
-
-				case 4:
+				case 4: //Invert
 					shader_selector = 5;
+					break;
+				case 5: //Scan Line
+					shader_selector = 6;
+					ImGui::SliderInt("Scan lvl", &scan_intensity_, 0, 15);
+					ImGui::SliderInt("Speed", &scan_speed, 0, 20);
+					
+					break;
+				case 6: //Vignette
+					shader_selector = 7;
+					ImGui::SliderFloat("Radius", &radius_, 0, 1);
+					ImGui::SliderFloat("Sofness", &softness_, 0, 1);
+					ImGui::SliderFloat("Opacity", &opacity_, 0, 1);
+					
+					break;
+				case 7: //Chromatic Aberration
+					shader_selector = 8;
+					
+					/*ImGui::SliderFloat("Radius", &radius_, 0, 1);
+					ImGui::SliderFloat("Sofness", &softness_, 0, 1);
+					ImGui::SliderFloat("Opacity", &opacity_, 0, 0.09);*/
 					break;
 			}
 	

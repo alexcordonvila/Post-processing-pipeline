@@ -60,6 +60,15 @@ bool Shader::setUniform(UniformID id, const lm::mat4& data) {
     }
     return false;
 }
+//uniform block
+bool Shader::setUniformBlock(UniformID id, const int binding_point) {
+	GLint loc = getUniformLocation(id);
+	if (loc != -1) {
+		glUniformBlockBinding(program, loc, binding_point);
+		return true;
+	}
+	return false;
+}
 //texture
 bool Shader::setTexture(UniformID id, GLuint tex_id, GLuint unit) {
     //get texture id and bind it
