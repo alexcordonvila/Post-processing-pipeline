@@ -27,6 +27,9 @@ enum UniformID {
 	U_FLAG,
 	U_TIME,
 	U_SPEED,
+	U_INTENSITY,
+	U_BLUR,
+	U_MAT_TYPE,
 	UNIFORMS_COUNT
 	
 };
@@ -52,6 +55,9 @@ const std::unordered_map<std::string, UniformID> uniform_string2id_ = {
 	{ "u_screen_texture", U_SCREEN_TEXTURE },
 	{ "u_float_flag", U_FLAG },
 	{ "u_time", U_TIME },
+	{ "u_intensity", U_INTENSITY },
+	{ "u_flag_blur", U_BLUR },
+	{ "u_mat_type", U_MAT_TYPE },
 	{ "u_speed", U_SPEED }
 
 };

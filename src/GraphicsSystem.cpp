@@ -40,6 +40,7 @@ void GraphicsSystem::init(int window_width, int window_height, std::string asset
 	wave_shader_ = new Shader("data/shaders/wave.vert", "data/shaders/wave.frag");
 	tint_shader_ = new Shader("data/shaders/tint.vert", "data/shaders/tint.frag");
 	dithering_shader_ = new Shader("data/shaders/dithering.vert", "data/shaders/dithering.frag");
+	invert_shader_ = new Shader("data/shaders/invert.vert", "data/shaders/invert.frag");
 	frame_.initColor(window_width, window_height);
 	temp_texture_ = Parsers::parseTexture("data/assets/block_blue.tga");
 
@@ -88,29 +89,37 @@ void GraphicsSystem::update(float dt) {
 	glDisable(GL_DEPTH_TEST);
 
 	switch (shader_selector) {
-		case 1 :
-			//useShader(screen_space_shader_);
-			//screen_space_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+		case 1 ://normal and blur 
+			useShader(screen_space_shader_);
+			screen_space_shader_->setUniform(U_INTENSITY, (int)intesity_);
+			screen_space_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+			
+			screen_space_shader_->setUniform(U_BLUR, (float)blur_flag_);
 			break; 
-		case 2:
+		case 2: //wave effect
 			useShader(wave_shader_);
 			wave_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
-			//GLfloat move = dt;
-			time = time + dt;
+			time = time + dt; 
 			wave_shader_->setUniform(U_TIME,time);
 			wave_shader_->setUniform(U_FLAG, (float)wave_flag_);
 			wave_shader_->setUniform(U_SPEED, (float)wave_speed_);
 			break; 
-		case 3:
+		case 3: //tint shader
 			useShader(tint_shader_);
 			tint_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
 			tint_shader_->setUniform(U_NUM_LIGHTS, color_var);
-			break; //optional
+			tint_shader_->setUniform(U_FLAG, (float)bw_flag_);
+			break; 
 		case 4:
 			useShader(dithering_shader_);
 			dithering_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
 			dithering_shader_->setUniform(U_FLAG, (float)bw_flag_);
-			break; //optional
+			dithering_shader_->setUniform(U_MAT_TYPE, (float)mat_type_);
+			break; 
+		case 5:
+			useShader(invert_shader_);
+			dithering_shader_->setTexture(U_SCREEN_TEXTURE, frame_.color_textures[0], 0);
+			break;
 	}
 	glViewport(0, 0, (GLsizei)viewport_width_, (GLsizei)viewport_height_);
 	geometries_[screen_space_geom_].render();
@@ -128,7 +137,7 @@ void GraphicsSystem::update(float dt) {
 	ImGui::SetNextWindowBgAlpha(1.0);
 	ImGui::Begin("Post Processing");
 
-	const char* items[]{"Bloom","Screen Wave","Color tint","Diethering" };
+	const char* items[]{"Normal","Screen Wave","Color tint","Diethering","Invert" };
 	static int selectedItem = 0;
 	static bool selected[1];
 	static float r, g, b;
@@ -140,6 +149,10 @@ void GraphicsSystem::update(float dt) {
 				case 0: 
 					shader_selector = 1; 
 					ImGui::Separator();
+					ImGui::Checkbox("Blur", &blur_flag_);
+					ImGui::SliderInt("Blur lvl", &intesity_, 2, 6);
+					
+					
 					break;
 				case 1: 
 					shader_selector = 2; 	
@@ -153,12 +166,19 @@ void GraphicsSystem::update(float dt) {
 					ImGui::Text("Select Color:");
 					ImGui::ColorPicker3("Color", (float*)&color, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
 					color_var = lm::vec3(color.x, color.y, color.z);
+					ImGui::Checkbox("Gray Scale", &bw_flag_);
 					
 					break;
 				case 3:
 					shader_selector = 4;
 					ImGui::Separator();
+					if (ImGui::Button("MAT 4x4")) { mat_type_ = 0; }
+					if (ImGui::Button("MAT 8x8")) { mat_type_ = 1; }
 					ImGui::Checkbox("Black And White",&bw_flag_);
+					break;
+
+				case 4:
+					shader_selector = 5;
 					break;
 			}
 	

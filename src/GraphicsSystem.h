@@ -54,13 +54,18 @@ private:
 	Shader* wave_shader_ = nullptr;
 	Shader* tint_shader_ = nullptr;
 	Shader* dithering_shader_ = nullptr;
+	Shader* invert_shader_ = nullptr;
+
 	float time = 0; //acum delta time
 	lm::vec3 color_var; //used in color picker
 	float color_value[3] = { 0, 0, 0 };
 	int shader_selector = 1;
 	bool bw_flag_ = false;
+	bool blur_flag_ = false;
 	bool wave_flag_ = true;
 	float wave_speed_ = 1;
+	int intesity_ = 2;
+	int mat_type_ = 0;
 	void useShader(Shader* s);
 	void useShader(GLuint p);
 

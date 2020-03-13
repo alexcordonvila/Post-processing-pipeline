@@ -3,6 +3,7 @@ in vec2 v_uv;
 out vec4 fragColor;
 uniform sampler2D u_screen_texture;
 uniform float u_float_flag;
+uniform int u_mat_type;
 uniform vec3 palette[8];
 uniform int paletteSize;
 const int indexMatrix4x4[16] = int[](0,  8,  2,  10,
@@ -21,16 +22,6 @@ const int indexMatrix8x8[64] = int[](0,  32, 8,  40, 2,  34, 10, 42,
 
 const float lightnessSteps = 4.0;
 
-float indexValue4() {
-    int x = int(mod(gl_FragCoord.x, 4));
-    int y = int(mod(gl_FragCoord.y, 4));
-    return indexMatrix4x4[(x + y * 4)] / 16.0;
-}
-float indexValue8() {
-    int x = int(mod(gl_FragCoord.x, 8));
-    int y = int(mod(gl_FragCoord.y, 8));
-    return indexMatrix8x8[(x + y * 8)] / 64.0;
-}
 float hueDistance(float h1, float h2) {
     float diff = abs((h1 - h2));
     return min(abs((1.0 - diff)), diff);
@@ -60,21 +51,25 @@ vec3[2] closestColors(float hue) {
     ret[1] = secondClosest;
     return ret;
 }
-
-float dither(float color) {
-    float closestColor = (color < 0.5) ? 0 : 1;
-    float secondClosestColor = 1 - closestColor;
-    float d = indexValue8();
-    float distance = abs(closestColor - color);
-
-    return (distance < d) ? closestColor : secondClosestColor;
+float indexValue(float option) {
+	int x,y;
+	if(option == 0){
+	    x = int(mod(gl_FragCoord.x, 4));
+	    y = int(mod(gl_FragCoord.y, 4));
+	    return indexMatrix4x4[(x + y * 4)] / 16.0;		
+	}else{
+	    x = int(mod(gl_FragCoord.x, 8));
+	    y = int(mod(gl_FragCoord.y, 8));
+	    return indexMatrix8x8[(x + y * 8)] / 64.0;
+	}
 }
-//float dither(float color) {
+
+//float dither(float color, float option) {
 //	vec3 hsl = texture(u_screen_texture, v_uv).xyz;
 //    vec3 colors[2] = closestColors(hsl.x);
 //    vec3 closestColor = colors[0];
 //	vec3 secondClosestColor = colors[1];
-//    float d = indexValue8();
+//    float d = indexValue(option);
 //    float hueDiff = hueDistance(hsl.x, closestColor.x) /
 //                    hueDistance(secondClosestColor.x, closestColor.x);
 //	 
@@ -87,14 +82,24 @@ float dither(float color) {
 //	return resultColor;
 //}
 
+float dither(float color,float option) {
+    float closestColor = (color < 0.5) ? 0 : 1;
+    float secondClosestColor = 1 - closestColor;
+	float d = indexValue(option);
+    float distance = abs(closestColor - color);
+
+    return (distance < d) ? closestColor : secondClosestColor;
+}
 void main () {
 	u_float_flag;
 	vec3 color = texture(u_screen_texture, v_uv).xyz;
-	float averege = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+	
 
 	if(u_float_flag == 0.0f){
-		fragColor = vec4(dither(color.x),dither(color.y),dither(color.z), 1);
+		color = vec3(	dither(color.x, u_mat_type),dither(color.y, u_mat_type),dither(color.z, u_mat_type));
+		fragColor = vec4(dither(color.x,u_mat_type),dither(color.y,u_mat_type),dither(color.z,u_mat_type), 1);
 	}else{
-		fragColor = vec4(dither(averege),dither(averege),dither(averege), 1);
+		float averege = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+		fragColor = vec4(dither(averege,u_mat_type),dither(averege,u_mat_type),dither(averege,u_mat_type), 1);
 	}
 }

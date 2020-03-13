@@ -4,7 +4,7 @@ in vec2 v_uv;
 uniform sampler2D u_screen_texture;
 uniform int uColor;
 out vec4 fragColor;
-
+uniform float u_float_flag;
 uniform vec3 u_num_lights;
 
 void main(){
@@ -19,5 +19,8 @@ vec3 color = texture(u_screen_texture,v_uv).xyz;
 	
 	//fragColor = vec4(u_num_lights.x,u_num_lights.y,u_num_lights.z,1.0);	
 	fragColor = vec4(u_num_lights.x * color.x,u_num_lights.y * color.y,u_num_lights.z* color.z,1.0);	
-
+	if(u_float_flag == 1.0f){
+	float averege = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+		fragColor = vec4(averege,averege,averege, 1.0); 
+	}
 }

@@ -55,7 +55,7 @@ void Game::init(int w, int h) {
 	Mesh& floor_mesh = ECS.createComponentForEntity<Mesh>(floor_entity);
 	floor_mesh.geometry = graphics_system_.createGeometryFromFile("data/assets/floor_40x40.obj");
 	floor_mesh.material = graphics_system_.createMaterial();
-	floor_mesh.shader_flag = false;
+	floor_mesh.shader_flag = true;
 	Material& floor_mat = graphics_system_.getMaterial(floor_mesh.material);
 	floor_mat.shader_id = phong_shader->program;
 	floor_mat.diffuse_map = Parsers::parseTexture("data/assets/block_blue.tga");
