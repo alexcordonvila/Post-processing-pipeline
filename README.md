@@ -1,6 +1,8 @@
 # La Salle - Universitat Ramon Llull : Master in Advanced Videogame Development
 ## Post Processing FX
 
+### Screenshots
+
 ### Normal and blur
 ![Color](https://raw.githubusercontent.com/incodemon/Post-processing-pipeline/master/data/Blur.JPG)
 ### Screen Tint
